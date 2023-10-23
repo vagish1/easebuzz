@@ -3,11 +3,7 @@ package app.hashinclude.easebuzz;
 import android.content.Context;
 import android.content.Intent;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.easebuzz.payment.kit.PWECouponsActivity;
 import com.google.gson.Gson;
@@ -19,6 +15,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import datamodels.PWEStaticDataModel;
+import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -26,7 +23,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
 /** EasebuzzPlugin */
-public class EasebuzzPlugin extends AppCompatActivity implements FlutterPlugin, MethodCallHandler {
+public class EasebuzzPlugin extends FlutterActivity implements FlutterPlugin, MethodCallHandler {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -81,7 +78,7 @@ public class EasebuzzPlugin extends AppCompatActivity implements FlutterPlugin, 
       Intent intentProceed = new Intent(context, PWECouponsActivity.class);
 
       intentProceed.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-      setResult(PWEStaticDataModel.PWE_REQUEST_CODE);
+
       Iterator<?> keys = parameters.keys();
       while(keys.hasNext() ) {
         String value = "";
@@ -94,16 +91,7 @@ public class EasebuzzPlugin extends AppCompatActivity implements FlutterPlugin, 
           intentProceed.putExtra(key,value);
         }
       }
-      registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-          if(result.getResultCode() == PWEStaticDataModel.PWE_REQUEST_CODE){
-              if(result.getData()!=null){
-                initiatePayment(result.getData());
-              }
-          }
-        }
-      });
+     startActivityForResult(intentProceed,PWEStaticDataModel.PWE_REQUEST_CODE);
     }catch (Exception e) {
       start_payment=true;
       Map<String, Object> error_map = new HashMap<>();
@@ -117,7 +105,17 @@ public class EasebuzzPlugin extends AppCompatActivity implements FlutterPlugin, 
     }
   }
 
- private  void initiatePayment(Intent data){
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if(requestCode == PWEStaticDataModel.PWE_REQUEST_CODE){
+      if(data!=null){
+        initiatePayment(data);
+      }
+    }
+    super.onActivityResult(requestCode, resultCode, data);
+  }
+
+  private  void initiatePayment(Intent data){
 
          start_payment = true;
          JSONObject response = new JSONObject();
