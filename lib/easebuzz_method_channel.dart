@@ -21,8 +21,8 @@ class MethodChannelEasebuzz extends EasebuzzPlatform {
       {required String accessToken, required isProduction}) async {
     final Map<String, dynamic>? afterPayment = await methodChannel
         .invokeMethod<Map<String, dynamic>>('openPaymentGateway', {
-      "accessToken": accessToken,
-      "payMode": isProduction ? "production" : "test"
+      "access_key": accessToken,
+      "pay_mode": isProduction ? "production" : "test"
     });
     return Future.value(afterPayment);
   }
